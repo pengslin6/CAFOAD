@@ -6,7 +6,7 @@ revised CAFOAD manuscript. The Python files are uploaded without changing the
 experiment implementation. Configure the data and result paths described below
 before running them on another computer.
 
-Four principal code files
+Five principal code files
 -------------------------
 
 1. combinenew.py
@@ -16,15 +16,22 @@ Four principal code files
 
 2. CAFOAD_major_revision.py
    Implements CAFOAD, the matched baseline models, train-only preprocessing,
-   training and inference, robustness evaluation, guarded online adaptation,
-   and runtime analyses.
+   grouped training and inference, robustness evaluation, and runtime
+   analyses. The CAFOAD configuration uses a 64-dimensional representation,
+   four attention heads, and two causal Transformer layers.
 
 3. multiclass_grouped_cv_runner.py
    Entry point for the leakage-audited, class-complete grouped five-fold
    multiclass evaluation. Each retained event block is used as test data
    exactly once, and preprocessing and model selection remain fold local.
 
-4. run_grouped_decision_fusion.py
+4. igcps_multiclass_online_runner.py
+   Implements the manuscript's validation-calibrated three-signal guarded
+   prequential adaptation on the six-class IGCPS stream. It predicts and logs
+   each batch before any optional update, and writes the protocol, batch,
+   classwise, and contamination audits.
+
+5. run_grouped_decision_fusion.py
    Entry point for the grouped five-fold decision-fusion comparison: naive
    Bayes (NB), behavior knowledge space (BKS), majority voting, and weighted
    majority voting. It can append the TV-DBN and CAFOAD reference rows when the
@@ -35,7 +42,7 @@ Required auxiliary code
 
 multiclass_eventwise_runner.py
    Provides the shared dataset mapping, original-label conversion,
-   causal-window loader, and class-weighted training sampler imported by
+   causal-window loader, and class-weighted training support imported by
    multiclass_grouped_cv_runner.py. Keep it in the same directory as the
    grouped five-fold runner.
 
@@ -74,7 +81,8 @@ Before running it on another computer, configure the following mappings:
    fused CSV files. Its current defaults use the causal_grid_fusion subfolder.
 
 2. In multiclass_eventwise_runner.py, set DATASETS to the same fused CSV
-   locations. multiclass_grouped_cv_runner.py imports this mapping.
+   locations. multiclass_grouped_cv_runner.py and
+   igcps_multiclass_online_runner.py import this mapping.
 
 3. In run_grouped_decision_fusion.py, set DEFAULT_DATASETS to the local fused
    CSV locations. The uploaded file retains the absolute paths of the original
@@ -105,6 +113,11 @@ Run the grouped decision-fusion comparison on the public datasets:
 To run the complete three-dataset protocol, place an authorized
 igcps_final_unified.csv at the configured IGCPS path and include IGCPS in the
 --datasets argument.
+
+With authorized IGCPS data configured in multiclass_eventwise_runner.py, run
+the six-class guarded online audit:
+
+  python igcps_multiclass_online_runner.py --output online_audit_results --seed 13 --epochs 30
 
 Core dependencies
 -----------------
